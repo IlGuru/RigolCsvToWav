@@ -5,7 +5,7 @@
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="RigolCsvToWav" ConfigName="Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Release" Selected="yes">
+    <WorkspaceConfiguration Name="Release" Selected="no">
       <Project Name="RigolCsvToWav" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
