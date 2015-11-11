@@ -1,1 +1,6 @@
 *.wav
+*.raw
+*.log
+*.plt
+*.o
+*.c.o

@@ -4,13 +4,15 @@
 #include <sndfile.h>
 
 #define FLT_MAX		__FLT_MAX__
+#define NUM_CANALI  4
+#define MAX_COLONNE NUM_CANALI+2
 
 //	csv file
 typedef struct {
 	FILE*	fd;
 	char*	nome_file;
 	int		num_colonne;
-	char	colonna[6][32];
+	char	colonna[MAX_COLONNE][32];
 	char	s[256];
 } s_csv_file;
 
@@ -23,9 +25,9 @@ typedef struct {
 
 typedef struct {
 	int		num_canali;
-	float	f_dato[4];
-	int		i_dato[4];
-	s_stat	stat[4];
+	float	f_dato[NUM_CANALI];
+	float	f_dato_norm[NUM_CANALI];
+	s_stat	stat[NUM_CANALI];
 } s_dati;
 
 typedef struct {
@@ -69,7 +71,7 @@ void InitCsv( s_csv_file* p_csv )
 	int			i_ind;
 	
 	p_csv->num_colonne 	= 0;
-	for ( i_ind=0; i_ind<6; i_ind++ )
+	for ( i_ind=0; i_ind<MAX_COLONNE; i_ind++ )
 	{
 		p_csv->colonna[ i_ind ][0] = '\0';
 	}
@@ -117,14 +119,14 @@ void InitDati( s_dati* p_dati )
 	int			i_ind;
 
 	p_dati->num_canali	= 0;
-	for ( i_ind=0; i_ind<4; i_ind++ )
+	for ( i_ind=0; i_ind<NUM_CANALI; i_ind++ )
 	{
 		p_dati->f_dato[ i_ind ]		= 0.0;
 		p_dati->stat[ i_ind ].f_max =-FLT_MAX;
 		p_dati->stat[ i_ind ].f_min = FLT_MAX;
 		p_dati->stat[ i_ind ].f_cm	= 0.0;
 		p_dati->stat[ i_ind ].f_amp	= 0.0;
-		p_dati->i_dato[ i_ind ]		= 0;
+		p_dati->f_dato_norm[ i_ind ]= 0.0;
 	}
 }
 
@@ -143,7 +145,7 @@ void ConvertiDati( s_csv_file* p_csv, s_dati* p_dati )
 	
 	p_dati->num_canali = p_csv->num_colonne;
 	
-	for ( i_ind=0; i_ind < 4; i_ind++ )
+	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
 	{
 		if ( i_ind < p_csv->num_colonne )
 		{
@@ -163,7 +165,7 @@ void CalcolaCmAmp( s_dati* p_dati )
 {
 	int			i_ind;
 	
- 	for ( i_ind=0; i_ind < 4; i_ind++ )
+ 	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
 	{
 		p_dati->stat[i_ind].f_cm = ( p_dati->stat[i_ind].f_max + p_dati->stat[i_ind].f_min ) / 2.0;
 		p_dati->stat[i_ind].f_amp = ( p_dati->stat[i_ind].f_max - p_dati->stat[i_ind].f_min ) / 2.0;
@@ -189,9 +191,9 @@ void NormalizzaInt( s_dati* p_dati )
 {
 	int	i_ind;
 	
- 	for ( i_ind=0; i_ind < 4; i_ind++ )
+ 	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
 	{
-		p_dati->i_dato[i_ind] = ( ( p_dati->f_dato[i_ind] - p_dati->stat[i_ind].f_cm ) / p_dati->stat[i_ind].f_amp ) * ( 0x7FFF0000 );
+		p_dati->f_dato_norm[i_ind]	= ( p_dati->f_dato[i_ind] - p_dati->stat[i_ind].f_cm ) / p_dati->stat[i_ind].f_amp;
 	}
 }
 
@@ -383,10 +385,12 @@ int main(int argc, char **argv)
 	//	Rileggo il file
 	rewind( Csv.fd );
 	
+	//	Formato file wav
 	wav_file.sfinfo.format		= SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 	wav_file.sfinfo.channels	= Dati.num_canali;
 	wav_file.sfinfo.samplerate	= Parametri.sample_rate.val.i;
 	
+	//	Apertura file wav in scrittura
 	if ((wav_file.fd = sf_open(wav_file.nome_file, SFM_WRITE, &wav_file.sfinfo)) == NULL )
 	{
 		printf( "\nErrore apertura file wav.\n" );
@@ -410,7 +414,7 @@ int main(int argc, char **argv)
 		ConvertiDati( &Csv, &Dati );
 		NormalizzaInt( &Dati );
 
-		sf_writef_int( wav_file.fd, Dati.i_dato, 1);
+		sf_writef_float( wav_file.fd, Dati.f_dato_norm, 1);
 	}
 	
 	//	Chiusura files
