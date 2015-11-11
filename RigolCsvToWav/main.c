@@ -345,7 +345,7 @@ int main(int argc, char **argv)
 
 	if ((Csv.fd = fopen64( Csv.nome_file, "r" )) == NULL )
 	{
-		printf( "Errore apertura file.\n" );
+		printf( "\nErrore apertura file csv.\n" );
 		return 1;
 	}
 
@@ -387,7 +387,11 @@ int main(int argc, char **argv)
 	wav_file.sfinfo.channels	= Dati.num_canali;
 	wav_file.sfinfo.samplerate	= Parametri.sample_rate.val.i;
 	
-	wav_file.fd = sf_open(wav_file.nome_file, SFM_WRITE, &wav_file.sfinfo);
+	if ((wav_file.fd = sf_open(wav_file.nome_file, SFM_WRITE, &wav_file.sfinfo)) == NULL )
+	{
+		printf( "\nErrore apertura file wav.\n" );
+		return 1;
+	}
 
 	//	Skip prime righe
 	for ( i_ind = 0; i_ind < Parametri.skip_rows.val.i; i_ind++ )
