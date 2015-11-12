@@ -1,1 +1,1 @@
-RigolCsvToWav.exe -i in.csv -sr 20000 -vv -o out_20000.wav
+RigolCsvToWav.exe -vv -sr 20k -i in.csv -o out_20k.wav

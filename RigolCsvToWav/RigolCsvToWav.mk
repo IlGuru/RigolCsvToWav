@@ -2,18 +2,18 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Release
+## Debug
 ProjectName            :=RigolCsvToWav
-ConfigurationName      :=Release
+ConfigurationName      :=Debug
 WorkspacePath          := "C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav"
 ProjectPath            := "C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav"
-IntermediateDirectory  :=./Release
+IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=sbusnelli
-Date                   :=11/11/15
+Date                   :=11/12/15
 CodeLitePath           :="C:\Program Files\CodeLite"
 LinkerName             :=C:/TDM-GCC-64/bin/g++.exe 
 SharedObjectLinkerName :=C:/TDM-GCC-64/bin/g++.exe -shared -fPIC
@@ -28,7 +28,7 @@ LibraryPathSwitch      :=-L
 PreprocessorSwitch     :=-D
 SourceSwitch           :=-c 
 OutputFile             :=$(IntermediateDirectory)/$(ProjectName)
-Preprocessors          :=$(PreprocessorSwitch)NDEBUG 
+Preprocessors          :=
 ObjectSwitch           :=-o 
 ArchiveOutputSwitch    := 
 PreprocessOnlySwitch   :=-E
@@ -52,8 +52,8 @@ LibPath                := $(LibraryPathSwitch)C:/cygwin64/home/sbusnelli/progett
 AR       := C:/TDM-GCC-64/bin/ar.exe rcu
 CXX      := C:/TDM-GCC-64/bin/g++.exe 
 CC       := C:/TDM-GCC-64/bin/gcc.exe 
-CXXFLAGS :=  -O2 -Wall $(Preprocessors)
-CFLAGS   :=  -O2 -Wall $(Preprocessors)
+CXXFLAGS :=  -g -O0 -Wall $(Preprocessors)
+CFLAGS   :=  -g -O0 -Wall $(Preprocessors)
 ASFLAGS  := 
 AS       := C:/TDM-GCC-64/bin/as.exe 
 
@@ -81,7 +81,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@$(MakeDirCommand) "./Release"
+	@$(MakeDirCommand) "./Debug"
 
 PreBuild:
 
@@ -103,6 +103,6 @@ $(IntermediateDirectory)/main.c$(PreprocessSuffix): main.c
 ## Clean
 ##
 clean:
-	$(RM) -r ./Release/
+	$(RM) -r ./Debug/
 
 

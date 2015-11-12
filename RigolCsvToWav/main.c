@@ -202,15 +202,28 @@ void Istruzioni( int argc, char** argv )
 	int		i_ind;
 
 	printf( "\nIstruzioni:\n" );
-	printf( "	RigolCsvToWav.exe [-v] -sr sample_rate [-o out[.wav]] -i file_in\n" );
-	printf( "	  Parametri obbligatori:\n" );
-	printf( "	    -i : Nome file csv.\n" );
-	printf( "	    -sr: Sample rate. Parametro obbligatorio.\n" );
-	printf( "	  Parametri opzionali:\n" );
-	printf( "	    -sk: Numero righe da ignorare all'inizio del file.\n" );
-	printf( "	    -v:  Verbose.\n" );
-	printf( "	    -vv: Very Verbose.\n" );
-	printf( "\n	Es: RigolCsvToWav [-v] -sr 125000000 [-o out[.wav]] file_in.csv\n\n" );
+	printf( "  RigolCsvToWav.exe [-v] [-vv] -sr sample_rate -i file_in [-o out[.wav]]\n" );
+	printf( "    La posizione dei parametri non conta.\n" );
+	printf( "    Parametri obbligatori:\n" );
+	printf( "      -i : Nome file csv.\n" );
+	printf( "      -sr: Sample rate. Parametro obbligatorio.\n" );
+	printf( "           Il valore deve essere nella forma N[M]\n");
+	printf( "             N: un intero maggiore di zero\n");
+	printf( "             M: una stringa case insensitive opzionale del tipo k[*]|m[*]|g[*]\n");
+	printf( "                k, K: *10^3\n" );
+	printf( "                m, M: *10^6\n" );
+	printf( "                g, G: *10^9\n" );
+	printf( "                Ogni altra stringa di caratteri e' ininfluente.\n" );
+	printf( "    Parametri opzionali:\n" );
+	printf( "      -o : Nome file wav.\n" );
+	printf( "           Se non specificato viene preso il nome del file in ingresso con estensione '.wav'.\n" );
+	printf( "      -sk: Numero righe da ignorare all'inizio del file.\n" );
+	printf( "           Di default sono 2.\n" );
+	printf( "      -v:  Verbose.\n" );
+	printf( "           Visualizza i passaggi.\n" );
+	printf( "      -vv: Very Verbose.\n" );
+	printf( "           Visualizza i dati letti dal file csv ed alcune statistiche.\n" );
+	printf( "\n Es: RigolCsvToWav [-v] -sr 125Mega [-o out[.wav]] file_in.csv\n\n" );
 	printf( "Avevi scritto:\n" );
 	for ( i_ind=0; i_ind < argc; i_ind++ )
 		printf( "%s ", argv[i_ind] );
@@ -220,6 +233,7 @@ void Istruzioni( int argc, char** argv )
 int ParseParam( int argc, char** argv, s_param* p_param )
 {
 	int		i_ind;
+	char*	s;
 	
 	p_param->flags.f_file_in		= 0;
 	p_param->flags.f_file_out		= 0;
@@ -279,7 +293,31 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	//	Leggo il parametro sample_rate
 	if ( p_param->flags.f_sample_rate )
 	{
-		sscanf( argv[ p_param->sample_rate.pos ], "%d", &p_param->sample_rate.val.i );
+		p_param->sample_rate.val.i = 0;
+		s = (char*)malloc( strlen(argv[ p_param->sample_rate.pos ]) );
+		i_ind = sscanf( argv[ p_param->sample_rate.pos ], "%d%s", &p_param->sample_rate.val.i, s );
+		if ( p_param->sample_rate.val.i == 0 )
+		{
+			return 1;
+		}
+		if ( i_ind == 2 )
+		{
+			switch ( s[0] | 32 )
+			{
+				case 'k':
+					p_param->sample_rate.val.i *= 1000;
+					break;
+				case 'm':
+					p_param->sample_rate.val.i *= 1000000;
+					break;
+				case 'g':
+					p_param->sample_rate.val.i *= 1000000000;
+					break;
+				default:
+					printf( "   \nWARNING: Non ho riconosciuto il moltiplicatore %s.\n         sample_rate rimane impostato a %d.\n", s, p_param->sample_rate.val.i);
+					break;
+			}
+		}
 	}
 	else
 	{
