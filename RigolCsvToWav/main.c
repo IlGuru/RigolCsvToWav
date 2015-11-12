@@ -1,6 +1,6 @@
 /*
 	Copyright 2015 Stefano Busnelli
-		Verion: 		1.0.1
+		Verion: 		1.1.0
 		Last modified:	2015-11-12
 
     This program is free software: you can redistribute it and/or modify
@@ -23,16 +23,20 @@
 #include <sndfile.h>
 
 #define FLT_MAX		__FLT_MAX__
+
 #define NUM_CANALI  4
 #define MAX_COLONNE NUM_CANALI+2
+
+#define LEN_ROW 256
+#define LEN_COL 32
 
 //	csv file
 typedef struct {
 	FILE*	fd;
 	char*	nome_file;
 	int		num_colonne;
-	char	colonna[MAX_COLONNE][32];
-	char	s[256];
+	char*	colonna[MAX_COLONNE];
+	char*	s;
 } s_csv_file;
 
 typedef struct {
@@ -40,6 +44,7 @@ typedef struct {
 	float	f_max;
 	float	f_cm;
 	float	f_amp;
+	int		num_dati;
 } s_stat;
 
 typedef struct {
@@ -90,10 +95,14 @@ typedef struct {
 void InitCsv( s_csv_file* p_csv )
 {
 	int			i_ind;
-	
+
+	p_csv->s 	= (char*)malloc( LEN_ROW );
+	p_csv->s[0] = '\0';
+
 	p_csv->num_colonne 	= 0;
 	for ( i_ind=0; i_ind<MAX_COLONNE; i_ind++ )
 	{
+		p_csv->colonna[ i_ind ] = (char*)malloc( LEN_COL );
 		p_csv->colonna[ i_ind ][0] = '\0';
 	}
 
@@ -101,18 +110,30 @@ void InitCsv( s_csv_file* p_csv )
 
 void LeggiCsv( s_csv_file* p_csv )
 {
-	char* 	token;
+
+	fscanf( p_csv->fd, "%s", p_csv->s );
+
+}
+
+void ContaColonneCsv( s_csv_file* p_csv )
+{
 	int		i_ind	= 0;
 	int		i_num	= 0;
-	
-	fscanf( p_csv->fd, "%s", p_csv->s );
-	
+
 	//	Conto il numero di colonne nella stringa (minimo 1 colonna)
-	i_num = 1;
+	i_num = 0;
 	for( i_ind=0; p_csv->s[i_ind]!='\0'; i_ind++ )
 		if ( p_csv->s[i_ind] == ',' ) i_num++;
 	p_csv->num_colonne 	= i_num;
-	
+
+}
+
+int TokenizzaCsv( s_csv_file* p_csv )
+{
+	char* 	token		= NULL;
+	int		i_ind		= 0;
+	int		i_num_token	= 0;
+
 	//	Leggo i token
 	token = strtok( p_csv->s, "," );
 	i_ind = 0;
@@ -120,10 +141,17 @@ void LeggiCsv( s_csv_file* p_csv )
 	{
 		strcpy( p_csv->colonna[ i_ind ], token );
 		i_ind++;
-		
+
 		token = strtok( NULL, "," );
 	}
-	
+	i_num_token = i_ind;
+	while ( i_ind < MAX_COLONNE )
+	{
+		p_csv->colonna[ i_ind ][0] = '\0';
+		i_ind++;
+	}
+
+	return i_num_token;
 }
 
 void PrintCsv( s_csv_file* p_csv )
@@ -141,12 +169,13 @@ void InitDati( s_dati* p_dati )
 	p_dati->num_canali	= 0;
 	for ( i_ind=0; i_ind<NUM_CANALI; i_ind++ )
 	{
-		p_dati->f_dato[ i_ind ]		= 0.0;
-		p_dati->stat[ i_ind ].f_max =-FLT_MAX;
-		p_dati->stat[ i_ind ].f_min = FLT_MAX;
-		p_dati->stat[ i_ind ].f_cm	= 0.0;
-		p_dati->stat[ i_ind ].f_amp	= 0.0;
-		p_dati->f_dato_norm[ i_ind ]= 0.0;
+		p_dati->stat[ i_ind ].num_dati	= 0;
+		p_dati->f_dato[ i_ind ]			= 0.0;
+		p_dati->stat[ i_ind ].f_max 	=-FLT_MAX;
+		p_dati->stat[ i_ind ].f_min 	= FLT_MAX;
+		p_dati->stat[ i_ind ].f_cm		= 0.0;
+		p_dati->stat[ i_ind ].f_amp		= 0.0;
+		p_dati->f_dato_norm[ i_ind ]	= 0.0;
 	}
 }
 
@@ -161,18 +190,27 @@ void PrintDati( s_dati* p_dati )
 void ConvertiDati( s_csv_file* p_csv, s_dati* p_dati )
 {
 	int			i_ind;
-	
+	int         i_num;
+
 	p_dati->num_canali = p_csv->num_colonne;
 	
 	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
 	{
 		if ( i_ind < p_csv->num_colonne )
 		{
-			sscanf( p_csv->colonna[i_ind], "%g", &p_dati->f_dato[i_ind] );
-			if ( p_dati->f_dato[i_ind] < p_dati->stat[i_ind].f_min )
-				p_dati->stat[i_ind].f_min = p_dati->f_dato[i_ind];
-			if ( p_dati->f_dato[i_ind] > p_dati->stat[i_ind].f_max )
-				p_dati->stat[i_ind].f_max = p_dati->f_dato[i_ind];
+			i_num = sscanf( p_csv->colonna[i_ind], "%g", &p_dati->f_dato[i_ind] );
+			if ( i_num == 1 )
+			{
+				p_dati->stat[ i_ind ].num_dati++;
+				if ( p_dati->f_dato[i_ind] < p_dati->stat[i_ind].f_min )
+					p_dati->stat[i_ind].f_min = p_dati->f_dato[i_ind];
+				if ( p_dati->f_dato[i_ind] > p_dati->stat[i_ind].f_max )
+					p_dati->stat[i_ind].f_max = p_dati->f_dato[i_ind];
+			}
+			else
+			{
+				p_dati->f_dato[i_ind] = 0.0;
+			}
 		} else {
 			p_dati->f_dato[i_ind] = 0.0;
 		}
@@ -203,6 +241,7 @@ void PrintStatsDati( s_dati* p_dati )
 		printf( "         Valore max:     % 10.6f\n", p_dati->stat[i_ind].f_max );
 		printf( "         Valore mediano: % 10.6f\n", p_dati->stat[i_ind].f_cm );
 		printf( "         Valore ampezza: % 10.6f\n", p_dati->stat[i_ind].f_amp );
+		printf( "         Numero dati:    % 10d\n",   p_dati->stat[ i_ind ].num_dati );
 	}
 }
 
@@ -212,7 +251,14 @@ void NormalizzaInt( s_dati* p_dati )
 	
  	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
 	{
-		p_dati->f_dato_norm[i_ind]	= ( p_dati->f_dato[i_ind] - p_dati->stat[i_ind].f_cm ) / p_dati->stat[i_ind].f_amp;
+		if ( p_dati->stat[i_ind].f_amp == 0 )
+		{
+			p_dati->f_dato_norm[i_ind]	= 0.0;
+		}
+		else
+		{
+			p_dati->f_dato_norm[i_ind]	= ( p_dati->f_dato[i_ind] - p_dati->stat[i_ind].f_cm ) / p_dati->stat[i_ind].f_amp;
+		}
 	}
 }
 
@@ -400,7 +446,8 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 int main(int argc, char **argv)
 {
 	int			i_ind;
-	int         i_already_printed;
+	int			i_num_token;
+	int         i_first_data_row;
 	s_param		Parametri;
 	s_csv_file	Csv;
 	s_dati		Dati;
@@ -441,41 +488,54 @@ int main(int argc, char **argv)
 	for ( i_ind = 0; i_ind < Parametri.skip_rows.val.i; i_ind++ )
 	{
 		LeggiCsv( &Csv );
+
 		if ( Parametri.flags.f_very_verbose )
 		{
+			ContaColonneCsv( &Csv );
+			TokenizzaCsv( &Csv );
 			PrintCsv( &Csv );
 			printf( "\n" );
 		}
 	}
 
 	//	Leggo i valori
-	i_already_printed = 0;
+	i_first_data_row = 0;
 	while ( !feof( Csv.fd ) )
 	{
 		LeggiCsv( &Csv );
-		ConvertiDati( &Csv, &Dati );
-		if ( Parametri.flags.f_very_verbose )
+		if ( i_first_data_row == 0 )
 		{
-			if ( i_already_printed == 0 )
-			{
-				printf( "Dati:\n" );
-				for ( i_ind = 0; i_ind < Dati.num_canali; i_ind++ )
-				{
-					printf( "      Csv Col % 1d ", i_ind );
-				}
-				printf( "| " );
-				for ( i_ind = 0; i_ind < Dati.num_canali; i_ind++ )
-				{
-					printf( "   Chan % 1d ", i_ind );
-				}
-				printf( "\n" );
-				i_already_printed = 1;
-			}
-			PrintCsv( &Csv );
-			printf( "| " );
-			PrintDati( &Dati );
-			printf( "\n" );
+			ContaColonneCsv( &Csv );
 		}
+		i_num_token = TokenizzaCsv( &Csv );
+		if ( i_num_token == Csv.num_colonne )
+		{
+			ConvertiDati( &Csv, &Dati );
+			//	Visualizzo i valori letti ed i valori convertiti
+			if ( Parametri.flags.f_very_verbose )
+			{
+				if ( i_first_data_row == 0 )
+				{
+					printf( "Dati:\n" );
+					for ( i_ind = 0; i_ind < Dati.num_canali; i_ind++ )
+					{
+						printf( "      Csv Col % 1d ", i_ind );
+					}
+					printf( "| " );
+					for ( i_ind = 0; i_ind < Dati.num_canali; i_ind++ )
+					{
+						printf( "   Chan % 1d ", i_ind );
+					}
+					printf( "\n" );
+				}
+				PrintCsv( &Csv );
+				printf( "| " );
+				PrintDati( &Dati );
+				printf( "\n" );
+			}
+		}
+
+		i_first_data_row = 1;
 	}
 
 	//	Statistiche
@@ -513,13 +573,24 @@ int main(int argc, char **argv)
 		fflush(stdout);
 	}
 		
+	i_first_data_row = 0;
 	while ( !feof( Csv.fd ) )
 	{
 		LeggiCsv( &Csv );
-		ConvertiDati( &Csv, &Dati );
-		NormalizzaInt( &Dati );
+		if ( i_first_data_row == 0 )
+		{
+			ContaColonneCsv( &Csv );
+		}
+		i_num_token = TokenizzaCsv( &Csv );
+		if ( i_num_token == Csv.num_colonne )
+		{
+			ConvertiDati( &Csv, &Dati );
+			NormalizzaInt( &Dati );
 
-		sf_writef_float( wav_file.fd, Dati.f_dato_norm, 1);
+			sf_writef_float( wav_file.fd, Dati.f_dato_norm, 1);
+		}
+
+		i_first_data_row = 1;
 	}
 	
 	//	Chiusura files

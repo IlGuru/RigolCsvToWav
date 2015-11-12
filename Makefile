@@ -2,7 +2,7 @@
 
 All:
 	@echo "----------Building project:[ RigolCsvToWav - Debug ]----------"
-	@cd "RigolCsvToWav" && $(MAKE) -f  "RigolCsvToWav.mk"
+	@cd "RigolCsvToWav" && "$(MAKE)" -f  "RigolCsvToWav.mk"
 clean:
 	@echo "----------Cleaning project:[ RigolCsvToWav - Debug ]----------"
-	@cd "RigolCsvToWav" && $(MAKE) -f  "RigolCsvToWav.mk" clean
+	@cd "RigolCsvToWav" && "$(MAKE)" -f  "RigolCsvToWav.mk" clean
