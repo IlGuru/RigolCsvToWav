@@ -56,6 +56,7 @@ typedef struct {
    unsigned int f_skip_rows:1;
    unsigned int f_verbose:1;
    unsigned int f_very_verbose:1;
+   unsigned int f_help:1;
 } s_status_flags;
 
 typedef union u_values {
@@ -75,6 +76,7 @@ typedef struct {
 	s_parametro 	skip_rows;
 	s_parametro 	verbose;
 	s_parametro 	vverbose;
+	s_parametro 	help;
 	s_status_flags	flags;
 } s_param;
 
@@ -220,7 +222,7 @@ void Istruzioni( int argc, char** argv )
 {
 	int		i_ind;
 
-	printf( "\nIstruzioni:\n" );
+	printf( "\nRigolCsvToWav - Versione 1.0.0 - Istruzioni:\n" );
 	printf( "  RigolCsvToWav.exe [-v] [-vv] -sr sample_rate -i file_in [-o out[.wav]]\n" );
 	printf( "    La posizione dei parametri non conta.\n" );
 	printf( "    Parametri obbligatori:\n" );
@@ -242,8 +244,11 @@ void Istruzioni( int argc, char** argv )
 	printf( "           Visualizza i passaggi.\n" );
 	printf( "      -vv: Very Verbose.\n" );
 	printf( "           Visualizza i dati letti dal file csv ed alcune statistiche.\n" );
+	printf( "      -?:  Help.\n" );
+	printf( "           Visualizza questo menu'.\n" );
 	printf( "\n Es: RigolCsvToWav [-v] -sr 125Mega [-o out[.wav]] file_in.csv\n\n" );
-	printf( "Avevi scritto:\n" );
+
+	printf( "\nHai scritto:\n" );
 	for ( i_ind=0; i_ind < argc; i_ind++ )
 		printf( "%s ", argv[i_ind] );
 	printf( "\n" );	
@@ -296,6 +301,17 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 			p_param->flags.f_verbose 		= 1;
 			p_param->flags.f_very_verbose 	= 1;
 		}
+		if ( strcmp( argv[i_ind], "-?" ) == 0 )
+		{
+			p_param->help.pos				= i_ind;
+			p_param->flags.f_help 			= 1;
+		}
+	}
+	
+	//	Help
+	if ( p_param->flags.f_help ) 
+	{
+		return 0;
 	}
 	
 	//	Leggo il parametro file_in
