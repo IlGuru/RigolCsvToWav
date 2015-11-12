@@ -4,10 +4,10 @@
   <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray"/>
   <SerializedObject Name="m_breakpoints">
-    <long Value="5" Name="Count"/>
+    <long Value="6" Name="Count"/>
     <SerializedObject Name="Breakpoint0">
       <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav\main.c" Name="file"/>
-      <int Value="333" Name="lineno"/>
+      <int Value="328" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>
@@ -23,7 +23,7 @@
     </SerializedObject>
     <SerializedObject Name="Breakpoint1">
       <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav\main.c" Name="file"/>
-      <int Value="339" Name="lineno"/>
+      <int Value="376" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>
@@ -39,7 +39,7 @@
     </SerializedObject>
     <SerializedObject Name="Breakpoint2">
       <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav\main.c" Name="file"/>
-      <int Value="342" Name="lineno"/>
+      <int Value="382" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>
@@ -55,7 +55,7 @@
     </SerializedObject>
     <SerializedObject Name="Breakpoint3">
       <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav\main.c" Name="file"/>
-      <int Value="386" Name="lineno"/>
+      <int Value="385" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>
@@ -71,7 +71,23 @@
     </SerializedObject>
     <SerializedObject Name="Breakpoint4">
       <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav\main.c" Name="file"/>
-      <int Value="421" Name="lineno"/>
+      <int Value="429" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
+    <SerializedObject Name="Breakpoint5">
+      <wxString Value="C:\cygwin64\home\sbusnelli\progetti_c\libsndfile_001\RigolCsvToWav\RigolCsvToWav\main.c" Name="file"/>
+      <int Value="464" Name="lineno"/>
       <wxString Value="" Name="function_name"/>
       <wxString Value="" Name="memory_address"/>
       <int Value="1" Name="bp_type"/>

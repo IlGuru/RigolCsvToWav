@@ -296,9 +296,9 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 		p_param->sample_rate.val.i = 0;
 		s = (char*)malloc( strlen(argv[ p_param->sample_rate.pos ]) );
 		i_ind = sscanf( argv[ p_param->sample_rate.pos ], "%d%s", &p_param->sample_rate.val.i, s );
-		if ( p_param->sample_rate.val.i == 0 )
+		if ( p_param->sample_rate.val.i <= 0 )
 		{
-			return 1;
+			return 0;
 		}
 		if ( i_ind == 2 )
 		{
@@ -328,7 +328,12 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	if ( p_param->flags.f_skip_rows )
 	{
 		//	Se è stato passato come parametro leggo il valore dichiarato
-		sscanf( argv[ p_param->skip_rows.pos ], "%d", &p_param->skip_rows.val.i );
+		p_param->skip_rows.val.i = 0;
+		i_ind = sscanf( argv[ p_param->skip_rows.pos ], "%d", &p_param->skip_rows.val.i );
+		if ( (p_param->skip_rows.val.i <= 0) )
+		{
+			return 0;
+		}
 	}
 	else
 	{
