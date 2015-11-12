@@ -1,6 +1,6 @@
 /*
 	Copyright 2015 Stefano Busnelli
-		Verion: 		1.0.0
+		Verion: 		1.0.1
 		Last modified:	2015-11-12
 
     This program is free software: you can redistribute it and/or modify
@@ -131,8 +131,7 @@ void PrintCsv( s_csv_file* p_csv )
 	int			i_ind;
 
 	for ( i_ind=0; i_ind<p_csv->num_colonne; i_ind++ )
-		printf( "%s ", p_csv->colonna[ i_ind ] );
-	printf( "\n" );
+		printf( "%16s ", p_csv->colonna[ i_ind ] );
 }
 
 void InitDati( s_dati* p_dati )
@@ -156,8 +155,7 @@ void PrintDati( s_dati* p_dati )
 	int			i_ind;
 
 	for ( i_ind=0; i_ind<p_dati->num_canali; i_ind++ )
-		printf( "%016G ", p_dati->f_dato[ i_ind ] );
-	printf( "\n" );
+		printf( "% 10.6f ", p_dati->f_dato[ i_ind ] );
 }
 
 void ConvertiDati( s_csv_file* p_csv, s_dati* p_dati )
@@ -201,10 +199,10 @@ void PrintStatsDati( s_dati* p_dati )
  	for ( i_ind=0; i_ind < p_dati->num_canali; i_ind++ )
 	{
 		printf( "      Canele %d:\n", i_ind );
-		printf( "         Valore min:     %g\n", p_dati->stat[i_ind].f_min );
-		printf( "         Valore max:     %g\n", p_dati->stat[i_ind].f_max );
-		printf( "         Valore mediano: %g\n", p_dati->stat[i_ind].f_cm );
-		printf( "         Valore ampezza: %g\n", p_dati->stat[i_ind].f_amp );
+		printf( "         Valore min:     % 10.6f\n", p_dati->stat[i_ind].f_min );
+		printf( "         Valore max:     % 10.6f\n", p_dati->stat[i_ind].f_max );
+		printf( "         Valore mediano: % 10.6f\n", p_dati->stat[i_ind].f_cm );
+		printf( "         Valore ampezza: % 10.6f\n", p_dati->stat[i_ind].f_amp );
 	}
 }
 
@@ -402,6 +400,7 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 int main(int argc, char **argv)
 {
 	int			i_ind;
+	int         i_already_printed;
 	s_param		Parametri;
 	s_csv_file	Csv;
 	s_dati		Dati;
@@ -435,20 +434,48 @@ int main(int argc, char **argv)
 	}
 		
 	//	Skip prime righe
+	if ( Parametri.flags.f_very_verbose )
+	{
+		printf( "Header:\n" );
+	}
 	for ( i_ind = 0; i_ind < Parametri.skip_rows.val.i; i_ind++ )
 	{
 		LeggiCsv( &Csv );
 		if ( Parametri.flags.f_very_verbose )
+		{
 			PrintCsv( &Csv );
+			printf( "\n" );
+		}
 	}
 
 	//	Leggo i valori
+	i_already_printed = 0;
 	while ( !feof( Csv.fd ) )
 	{
 		LeggiCsv( &Csv );
-		if ( Parametri.flags.f_very_verbose )
-			PrintCsv( &Csv );
 		ConvertiDati( &Csv, &Dati );
+		if ( Parametri.flags.f_very_verbose )
+		{
+			if ( i_already_printed == 0 )
+			{
+				printf( "Dati:\n" );
+				for ( i_ind = 0; i_ind < Dati.num_canali; i_ind++ )
+				{
+					printf( "      Csv Col % 1d ", i_ind );
+				}
+				printf( "| " );
+				for ( i_ind = 0; i_ind < Dati.num_canali; i_ind++ )
+				{
+					printf( "   Chan % 1d ", i_ind );
+				}
+				printf( "\n" );
+				i_already_printed = 1;
+			}
+			PrintCsv( &Csv );
+			printf( "| " );
+			PrintDati( &Dati );
+			printf( "\n" );
+		}
 	}
 
 	//	Statistiche
