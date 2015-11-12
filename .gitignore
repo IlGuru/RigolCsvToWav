@@ -1,6 +1,11 @@
+#Out files
 *.wav
+
+#Spice files
 *.raw
 *.log
 *.plt
+
+#Intermediate binary
 *.o
 *.c.o
