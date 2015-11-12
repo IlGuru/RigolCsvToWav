@@ -156,7 +156,7 @@ void PrintDati( s_dati* p_dati )
 	int			i_ind;
 
 	for ( i_ind=0; i_ind<p_dati->num_canali; i_ind++ )
-		printf( "%g ", p_dati->f_dato[ i_ind ] );
+		printf( "%016G ", p_dati->f_dato[ i_ind ] );
 	printf( "\n" );
 }
 
