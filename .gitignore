@@ -1,3 +1,6 @@
+#In files
+*.csv
+
 #Out files
 *.wav
 
@@ -7,5 +10,6 @@
 *.plt
 
 #Intermediate binary
+*.d
 *.o
-*.c.o
+*.o.d
