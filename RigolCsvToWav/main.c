@@ -1,6 +1,6 @@
 /*
 	Copyright 2015 Stefano Busnelli
-		Verion: 		1.1.0
+		Verion: 		1.1.1
 		Last modified:	2015-11-12
 
     This program is free software: you can redistribute it and/or modify
@@ -224,8 +224,17 @@ void CalcolaCmAmp( s_dati* p_dati )
 	
  	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
 	{
-		p_dati->stat[i_ind].f_cm = ( p_dati->stat[i_ind].f_max + p_dati->stat[i_ind].f_min ) / 2.0;
-		p_dati->stat[i_ind].f_amp = ( p_dati->stat[i_ind].f_max - p_dati->stat[i_ind].f_min ) / 2.0;
+		if ( p_dati->stat[i_ind].f_max >= p_dati->stat[i_ind].f_min ) {
+			p_dati->stat[i_ind].f_cm = ( p_dati->stat[i_ind].f_max + p_dati->stat[i_ind].f_min ) / 2.0;
+			p_dati->stat[i_ind].f_amp = ( p_dati->stat[i_ind].f_max - p_dati->stat[i_ind].f_min ) / 2.0;
+		} 
+		else 
+		{
+			p_dati->stat[i_ind].f_min 	= 0.0;
+			p_dati->stat[i_ind].f_max	= 0.0;
+			p_dati->stat[i_ind].f_cm	= 0.0;
+			p_dati->stat[i_ind].f_amp	= 0.0;
+		}
 	}
 }
 
@@ -266,7 +275,7 @@ void Istruzioni( int argc, char** argv )
 {
 	int		i_ind;
 
-	printf( "\nRigolCsvToWav - Versione 1.0.0 - Istruzioni:\n" );
+	printf( "\nRigolCsvToWav - Versione 1.1.1 - Istruzioni:\n" );
 	printf( "  RigolCsvToWav.exe [-v] [-vv] -sr sample_rate -i file_in [-o out[.wav]]\n" );
 	printf( "    La posizione dei parametri non conta.\n" );
 	printf( "    Parametri obbligatori:\n" );
@@ -304,10 +313,12 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	char*	s;
 	
 	p_param->flags.f_file_in		= 0;
-	p_param->flags.f_file_out		= 0;
 	p_param->flags.f_sample_rate 	= 0;
+	p_param->flags.f_file_out		= 0;
+	p_param->flags.f_skip_rows		= 0;
 	p_param->flags.f_verbose		= 0;
 	p_param->flags.f_very_verbose	= 0;
+	p_param->flags.f_help			= 0;
 	for ( i_ind=1; i_ind<argc; i_ind++ )
 	{
 		if ( strcmp( argv[i_ind], "-i" ) == 0 )
