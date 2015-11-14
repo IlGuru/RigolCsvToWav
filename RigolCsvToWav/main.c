@@ -24,8 +24,7 @@
 
 #define FLT_MAX		__FLT_MAX__
 
-#define NUM_CANALI  4
-#define MAX_COLONNE NUM_CANALI+2
+#define MAX_COLONNE 6
 
 #define LEN_ROW 256
 #define LEN_COL 32
@@ -199,26 +198,23 @@ void ConvertiDati( s_csv_file* p_csv, s_dati* p_dati )
 
 	for ( i_ind=0; i_ind < p_dati->num_canali; i_ind++ )
 	{
-		if ( i_ind < p_csv->num_colonne )
+
+		i_num = sscanf( p_csv->colonna[i_ind], "%g", &p_dati->f_dato[i_ind] );
+		if ( i_num == 1 )
 		{
-			i_num = sscanf( p_csv->colonna[i_ind], "%g", &p_dati->f_dato[i_ind] );
-			if ( i_num == 1 )
-			{
-				p_dati->stat[ i_ind ].num_dati++;
-				if ( p_dati->f_dato[i_ind] < p_dati->stat[i_ind].f_min )
-					p_dati->stat[i_ind].f_min = p_dati->f_dato[i_ind];
-				if ( p_dati->f_dato[i_ind] > p_dati->stat[i_ind].f_max )
-					p_dati->stat[i_ind].f_max = p_dati->f_dato[i_ind];
-			}
-			else
-			{
-				p_dati->f_dato[i_ind] = 0.0;
-			}
-		} else {
+			p_dati->stat[ i_ind ].num_dati++;
+			if ( p_dati->f_dato[i_ind] < p_dati->stat[i_ind].f_min )
+				p_dati->stat[i_ind].f_min = p_dati->f_dato[i_ind];
+			if ( p_dati->f_dato[i_ind] > p_dati->stat[i_ind].f_max )
+				p_dati->stat[i_ind].f_max = p_dati->f_dato[i_ind];
+		}
+		else
+		{
 			p_dati->f_dato[i_ind] = 0.0;
 		}
 		
 	}
+
 }
 
 void CalcolaCmAmp( s_dati* p_dati )
@@ -257,7 +253,7 @@ void PrintStatsDati( s_dati* p_dati )
 	}
 }
 
-void NormalizzaInt( s_dati* p_dati )
+void NormalizzaDati( s_dati* p_dati )
 {
 	int	i_ind;
 	
@@ -599,7 +595,7 @@ int main(int argc, char **argv)
 		if ( i_num_token == Csv.num_colonne )
 		{
 			ConvertiDati( &Csv, &Dati );
-			NormalizzaInt( &Dati );
+			NormalizzaDati( &Dati );
 
 			sf_writef_float( wav_file.fd, Dati.f_dato_norm, 1);
 		}
