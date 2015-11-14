@@ -49,9 +49,9 @@ typedef struct {
 
 typedef struct {
 	int		num_canali;
-	float	f_dato[NUM_CANALI];
-	float	f_dato_norm[NUM_CANALI];
-	s_stat	stat[NUM_CANALI];
+	float*	f_dato;
+	float*	f_dato_norm;
+	s_stat*	stat;
 } s_dati;
 
 typedef struct {
@@ -162,20 +162,25 @@ void PrintCsv( s_csv_file* p_csv )
 		printf( "%16s ", p_csv->colonna[ i_ind ] );
 }
 
-void InitDati( s_dati* p_dati )
+void InitDati( s_dati* p_dati, int i_num_canali )
 {
 	int			i_ind;
 
-	p_dati->num_canali	= 0;
-	for ( i_ind=0; i_ind<NUM_CANALI; i_ind++ )
+	p_dati->num_canali	= i_num_canali;
+
+	p_dati->f_dato		= (float*)	malloc( i_num_canali * sizeof( float ) );
+	p_dati->f_dato_norm	= (float*)	malloc( i_num_canali * sizeof( float ) );
+	p_dati->stat		= (s_stat*)	malloc( i_num_canali * sizeof( s_stat ) );
+
+	for ( i_ind=0; i_ind<i_num_canali; i_ind++ )
 	{
-		p_dati->stat[ i_ind ].num_dati	= 0;
 		p_dati->f_dato[ i_ind ]			= 0.0;
+		p_dati->f_dato_norm[ i_ind ]	= 0.0;
 		p_dati->stat[ i_ind ].f_max 	=-FLT_MAX;
 		p_dati->stat[ i_ind ].f_min 	= FLT_MAX;
 		p_dati->stat[ i_ind ].f_cm		= 0.0;
 		p_dati->stat[ i_ind ].f_amp		= 0.0;
-		p_dati->f_dato_norm[ i_ind ]	= 0.0;
+		p_dati->stat[ i_ind ].num_dati	= 0;
 	}
 }
 
@@ -192,9 +197,7 @@ void ConvertiDati( s_csv_file* p_csv, s_dati* p_dati )
 	int			i_ind;
 	int         i_num;
 
-	p_dati->num_canali = p_csv->num_colonne;
-	
-	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
+	for ( i_ind=0; i_ind < p_dati->num_canali; i_ind++ )
 	{
 		if ( i_ind < p_csv->num_colonne )
 		{
@@ -222,7 +225,7 @@ void CalcolaCmAmp( s_dati* p_dati )
 {
 	int			i_ind;
 	
- 	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
+ 	for ( i_ind=0; i_ind < p_dati->num_canali; i_ind++ )
 	{
 		if ( p_dati->stat[i_ind].f_max >= p_dati->stat[i_ind].f_min ) {
 			p_dati->stat[i_ind].f_cm = ( p_dati->stat[i_ind].f_max + p_dati->stat[i_ind].f_min ) / 2.0;
@@ -258,7 +261,7 @@ void NormalizzaInt( s_dati* p_dati )
 {
 	int	i_ind;
 	
- 	for ( i_ind=0; i_ind < NUM_CANALI; i_ind++ )
+ 	for ( i_ind=0; i_ind < p_dati->num_canali; i_ind++ )
 	{
 		if ( p_dati->stat[i_ind].f_amp == 0 )
 		{
@@ -472,7 +475,6 @@ int main(int argc, char **argv)
 	}
 	
 	InitCsv( &Csv );
-	InitDati( &Dati );
 
 	Csv.nome_file = (char*)malloc( strlen( Parametri.file_in.val.s ) );
 	strcpy( Csv.nome_file, Parametri.file_in.val.s );
@@ -517,6 +519,7 @@ int main(int argc, char **argv)
 		if ( i_first_data_row == 0 )
 		{
 			ContaColonneCsv( &Csv );
+			InitDati( &Dati, Csv.num_colonne );
 		}
 		i_num_token = TokenizzaCsv( &Csv );
 		if ( i_num_token == Csv.num_colonne )
