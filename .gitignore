@@ -10,10 +10,11 @@
 *.plt
 
 #Codelite
-.codelite/
-
-#Intermediate binary
 *.d
 *.o
 *.o.d
+.codelite/
+Makefile
+Makefile
+RigolCsvToWav.*
 RigolCsvToWav/RigolCsvToWav.*
