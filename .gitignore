@@ -9,7 +9,11 @@
 *.log
 *.plt
 
+#Codelite
+.codelite/
+
 #Intermediate binary
 *.d
 *.o
 *.o.d
+RigolCsvToWav/RigolCsvToWav.*
