@@ -1,2 +1,6 @@
+Version 1.2.0 (2015-11-14)
+  * Allocazione dinamica delle colonne
+  * Bugs lettura parametri
+
 Version 1.0.0 (2015-11-12)
   * First offical release.

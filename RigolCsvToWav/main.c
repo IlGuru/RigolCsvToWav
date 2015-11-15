@@ -1,7 +1,7 @@
 /*
 	Copyright 2015 Stefano Busnelli
-		Verion: 		1.1.1
-		Last modified:	2015-11-12
+		Verion: 		1.2.0
+		Last modified:	2015-11-14
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published 
@@ -22,9 +22,9 @@
 #include <string.h>
 #include <sndfile.h>
 
-#define FLT_MAX		__FLT_MAX__
+#define S_VERSION "1.2.0"
 
-#define MAX_COLONNE 6
+#define FLT_MAX		__FLT_MAX__
 
 #define LEN_ROW 256
 #define LEN_COL 32
@@ -34,7 +34,7 @@ typedef struct {
 	FILE*	fd;
 	char*	nome_file;
 	int		num_colonne;
-	char*	colonna[MAX_COLONNE];
+	char**	colonna;
 	char*	s;
 } s_csv_file;
 
@@ -93,13 +93,20 @@ typedef struct {
 
 void InitCsv( s_csv_file* p_csv )
 {
-	int			i_ind;
-
-	p_csv->s 	= (char*)malloc( LEN_ROW );
-	p_csv->s[0] = '\0';
+	p_csv->s 			= (char*)malloc( LEN_ROW );
+	p_csv->s[0] 		= '\0';
 
 	p_csv->num_colonne 	= 0;
-	for ( i_ind=0; i_ind<MAX_COLONNE; i_ind++ )
+	p_csv->colonna		= NULL;
+}
+
+void InitColonneCsv( s_csv_file* p_csv, int i_num_colonne )
+{
+	int			i_ind;
+
+	p_csv->num_colonne 	= i_num_colonne;
+	p_csv->colonna = (char**) malloc( i_num_colonne * sizeof( char** ) );
+	for ( i_ind=0; i_ind<i_num_colonne; i_ind++ )
 	{
 		p_csv->colonna[ i_ind ] = (char*)malloc( LEN_COL );
 		p_csv->colonna[ i_ind ][0] = '\0';
@@ -114,7 +121,7 @@ void LeggiCsv( s_csv_file* p_csv )
 
 }
 
-void ContaColonneCsv( s_csv_file* p_csv )
+int ContaColonneCsv( s_csv_file* p_csv )
 {
 	int		i_ind	= 0;
 	int		i_num	= 0;
@@ -123,7 +130,8 @@ void ContaColonneCsv( s_csv_file* p_csv )
 	i_num = 0;
 	for( i_ind=0; p_csv->s[i_ind]!='\0'; i_ind++ )
 		if ( p_csv->s[i_ind] == ',' ) i_num++;
-	p_csv->num_colonne 	= i_num;
+
+	return i_num;
 
 }
 
@@ -144,7 +152,7 @@ int TokenizzaCsv( s_csv_file* p_csv )
 		token = strtok( NULL, "," );
 	}
 	i_num_token = i_ind;
-	while ( i_ind < MAX_COLONNE )
+	while ( i_ind < p_csv->num_colonne )
 	{
 		p_csv->colonna[ i_ind ][0] = '\0';
 		i_ind++;
@@ -274,7 +282,7 @@ void Istruzioni( int argc, char** argv )
 {
 	int		i_ind;
 
-	printf( "\nRigolCsvToWav - Versione 1.1.1 - Istruzioni:\n" );
+	printf( "\nRigolCsvToWav - Versione %s - Istruzioni:\n", S_VERSION );
 	printf( "  RigolCsvToWav.exe [-v] [-vv] -sr sample_rate -i file_in [-o out[.wav]]\n" );
 	printf( "    La posizione dei parametri non conta.\n" );
 	printf( "    Parametri obbligatori:\n" );
@@ -320,42 +328,42 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	p_param->flags.f_help			= 0;
 	for ( i_ind=1; i_ind<argc; i_ind++ )
 	{
-		if ( strcmp( argv[i_ind], "-i" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-i" ) == 0 )
 		{
 			p_param->file_in.pos 			= i_ind+1;
 			p_param->flags.f_file_in 		= 1;
 			i_ind++;
 		}
-		if ( strcmp( argv[i_ind], "-sr" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-sr" ) == 0 )
 		{
 			p_param->sample_rate.pos 		= i_ind+1;
 			p_param->flags.f_sample_rate	= 1;
 			i_ind++;
 		}
-		if ( strcmp( argv[i_ind], "-o" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-o" ) == 0 )
 		{
 			p_param->file_out.pos 			= i_ind+1;
 			p_param->flags.f_file_out 		= 1;
 			i_ind++;
 		}
-		if ( strcmp( argv[i_ind], "-sk" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-sk" ) == 0 )
 		{
 			p_param->skip_rows.pos 			= i_ind+1;
 			p_param->flags.f_skip_rows 		= 1;
 			i_ind++;
 		}
-		if ( strcmp( argv[i_ind], "-v" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-v" ) == 0 )
 		{
 			p_param->verbose.pos			= i_ind;
 			p_param->flags.f_verbose 		= 1;
 		}
-		if ( strcmp( argv[i_ind], "-vv" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-vv" ) == 0 )
 		{
 			p_param->vverbose.pos			= i_ind;
 			p_param->flags.f_verbose 		= 1;
 			p_param->flags.f_very_verbose 	= 1;
 		}
-		if ( strcmp( argv[i_ind], "-?" ) == 0 )
+		if ( i_ind < argc && strcmp( argv[i_ind], "-?" ) == 0 )
 		{
 			p_param->help.pos				= i_ind;
 			p_param->flags.f_help 			= 1;
@@ -371,6 +379,10 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	//	Leggo il parametro file_in
 	if ( p_param->flags.f_file_in )
 	{
+		if ( p_param->file_in.pos >= argc )
+		{
+			return 0;
+		}
 		p_param->file_in.val.s = (char*)malloc( strlen( argv[p_param->file_in.pos] ) );
 		strcpy( p_param->file_in.val.s, argv[p_param->file_in.pos] );
 	}
@@ -382,6 +394,10 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	//	Leggo il parametro sample_rate
 	if ( p_param->flags.f_sample_rate )
 	{
+		if ( p_param->sample_rate.pos >= argc )
+		{
+			return 0;
+		}
 		p_param->sample_rate.val.i = 0;
 		s = (char*)malloc( strlen(argv[ p_param->sample_rate.pos ]) );
 		i_ind = sscanf( argv[ p_param->sample_rate.pos ], "%d%s", &p_param->sample_rate.val.i, s );
@@ -416,6 +432,10 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	//	Leggo numero righe da ignorare all'inizio del file
 	if ( p_param->flags.f_skip_rows )
 	{
+		if ( p_param->skip_rows.pos >= argc )
+		{
+			return 0;
+		}
 		//	Se è stato passato come parametro leggo il valore dichiarato
 		p_param->skip_rows.val.i = 0;
 		i_ind = sscanf( argv[ p_param->skip_rows.pos ], "%d", &p_param->skip_rows.val.i );
@@ -434,20 +454,36 @@ int ParseParam( int argc, char** argv, s_param* p_param )
 	//	Leggo il parametro opzionale file_out
 	if ( p_param->flags.f_file_out )
 	{
+		if ( p_param->file_out.pos >= argc )
+		{
+			return 0;
+		}
 		//	Se è stato passato come parametro uso il valore dichiarato, aggiungendo l'estensione .wav
-		p_param->file_out.val.s = (char*)malloc( strlen( argv[p_param->file_out.pos] ) );
+		p_param->file_out.val.s = (char*)malloc( strlen( argv[p_param->file_out.pos]+4 ) );
 		strcpy( p_param->file_out.val.s, argv[p_param->file_out.pos] );
-		p_param->file_out.val.s = strtok( p_param->file_out.val.s, ".wav" );
-		strcat( p_param->file_out.val.s, ".wav" );
+		//	Se non trovo l'estensione .wav la concateno
+		s = strstr(p_param->file_out.val.s,".wav");
+		if ( s == NULL )
+		{
+			strcat( p_param->file_out.val.s, ".wav" );
+		}
 	}
 	else
 	{
 		//	Se non è stato passato come parametro uso il valore file in a cui sostituisco l'estensione .csv con .wav
 		p_param->file_out.pos 	= -1;
-		p_param->file_out.val.s = (char*)malloc( strlen( p_param->file_in.val.s ) );
+		p_param->file_out.val.s = (char*)malloc( strlen( p_param->file_in.val.s+4 ) );
 		strcpy( p_param->file_out.val.s, p_param->file_in.val.s );
-		p_param->file_out.val.s = strtok( p_param->file_out.val.s, ".csv" );
-		strcat( p_param->file_out.val.s, ".wav" );
+		//	Se non trovo l'estensione .csv concateno .wav, altrimenti la sostituisco
+		s = strstr(p_param->file_out.val.s,".csv");
+		if ( s == NULL )
+		{
+			strcat( p_param->file_out.val.s, ".wav" );
+		}
+		else
+		{
+			strncpy(s,".wav",4);
+		}
 	}
 
 	return 1;
@@ -459,7 +495,7 @@ int main(int argc, char **argv)
 	int			i_num_token;
 	int         i_first_data_row;
 	s_param		Parametri;
-	s_csv_file	Csv;
+	s_csv_file	csv_file;
 	s_dati		Dati;
 	s_wav_file	wav_file;
 
@@ -470,22 +506,33 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	
-	InitCsv( &Csv );
+	InitCsv( &csv_file );
 
-	Csv.nome_file = (char*)malloc( strlen( Parametri.file_in.val.s ) );
-	strcpy( Csv.nome_file, Parametri.file_in.val.s );
+	csv_file.nome_file = (char*)malloc( strlen( Parametri.file_in.val.s ) );
+	strcpy( csv_file.nome_file, Parametri.file_in.val.s );
 
 	wav_file.nome_file = (char*)malloc( strlen( Parametri.file_out.val.s ) );
 	strcpy( wav_file.nome_file, Parametri.file_out.val.s );
 
-	if ((Csv.fd = fopen64( Csv.nome_file, "r" )) == NULL )
+	if ( Parametri.flags.f_verbose ) {
+		printf( "\nRigolCsvToWav - Versione %s\n\n", S_VERSION );
+		fflush(stdout);
+	}
+
+	if ( Parametri.flags.f_verbose ) {
+		printf( "   File in : %s\n", csv_file.nome_file );
+		printf( "   File out: %s\n\n", wav_file.nome_file );
+		fflush(stdout);
+	}
+
+	if ((csv_file.fd = fopen64( csv_file.nome_file, "r" )) == NULL )
 	{
-		printf( "\nErrore apertura file csv.\n" );
+		printf( "\nErrore apertura file csv.\n\n" );
 		return 1;
 	}
 
 	if ( Parametri.flags.f_verbose ) {
-		printf( "   Leggo il file per calcolare i valori da normalizzare.\n");
+		printf( "   Leggo il file per calcolare i valori da normalizzare.\n\n");
 		fflush(stdout);
 	}
 		
@@ -494,33 +541,50 @@ int main(int argc, char **argv)
 	{
 		printf( "Header:\n" );
 	}
+	i_first_data_row = 0;
 	for ( i_ind = 0; i_ind < Parametri.skip_rows.val.i; i_ind++ )
 	{
-		LeggiCsv( &Csv );
-
+		//	Leggo una riga di header
+		LeggiCsv( &csv_file );
+		//	Conto le colonne nell' header e riservo la memoria per il numero di colonne csv
+		if ( i_first_data_row == 0 )
+		{
+			i_num_token = ContaColonneCsv( &csv_file );
+			InitColonneCsv( &csv_file, i_num_token );
+			i_first_data_row = 1;
+		}
+		//	Visualizzo dati presenti nell' header csv
 		if ( Parametri.flags.f_very_verbose )
 		{
-			ContaColonneCsv( &Csv );
-			TokenizzaCsv( &Csv );
-			PrintCsv( &Csv );
+			TokenizzaCsv( &csv_file );
+			PrintCsv( &csv_file );
 			printf( "\n" );
 		}
+
 	}
 
 	//	Leggo i valori
 	i_first_data_row = 0;
-	while ( !feof( Csv.fd ) )
+	while ( !feof( csv_file.fd ) )
 	{
-		LeggiCsv( &Csv );
+
+		//	Leggo una riga di dati
+		LeggiCsv( &csv_file );
+		//	Conto il numero di colonne e riservo la memoria per i dati
 		if ( i_first_data_row == 0 )
 		{
-			ContaColonneCsv( &Csv );
-			InitDati( &Dati, Csv.num_colonne );
+			i_num_token = ContaColonneCsv( &csv_file );
+			InitDati( &Dati, i_num_token );
+			i_first_data_row = 1;
 		}
-		i_num_token = TokenizzaCsv( &Csv );
-		if ( i_num_token == Csv.num_colonne )
+		//	Conto i token validi presenti nella riga appena letta
+		i_num_token = TokenizzaCsv( &csv_file );
+		if ( i_num_token == Dati.num_canali )
 		{
-			ConvertiDati( &Csv, &Dati );
+			//	Converto le stringhe nelle colonne csv in numero nei dati,
+			//		tenendo traccia di min e max e numero di dati letti
+			//		nelle statistiche
+			ConvertiDati( &csv_file, &Dati );
 			//	Visualizzo i valori letti ed i valori convertiti
 			if ( Parametri.flags.f_very_verbose )
 			{
@@ -538,14 +602,13 @@ int main(int argc, char **argv)
 					}
 					printf( "\n" );
 				}
-				PrintCsv( &Csv );
+				PrintCsv( &csv_file );
 				printf( "| " );
 				PrintDati( &Dati );
 				printf( "\n" );
 			}
 		}
 
-		i_first_data_row = 1;
 	}
 
 	//	Statistiche
@@ -558,7 +621,7 @@ int main(int argc, char **argv)
 	//	-------------------------------------------------------------
 	
 	//	Rileggo il file
-	rewind( Csv.fd );
+	rewind( csv_file.fd );
 	
 	//	Formato file wav
 	wav_file.sfinfo.format		= SF_FORMAT_WAV | SF_FORMAT_PCM_16;
@@ -568,33 +631,33 @@ int main(int argc, char **argv)
 	//	Apertura file wav in scrittura
 	if ((wav_file.fd = sf_open(wav_file.nome_file, SFM_WRITE, &wav_file.sfinfo)) == NULL )
 	{
-		printf( "\nErrore apertura file wav.\n" );
+		printf( "\nErrore apertura file wav.\n\n" );
 		return 1;
 	}
 
 	//	Skip prime righe
 	for ( i_ind = 0; i_ind < Parametri.skip_rows.val.i; i_ind++ )
 	{
-		LeggiCsv( &Csv );
+		LeggiCsv( &csv_file );
 	}
 
 	if ( Parametri.flags.f_verbose ) {
-		printf( "   Scrivo file wav.\n");
+		printf( "   Scrivo file wav.\n\n");
 		fflush(stdout);
 	}
 		
 	i_first_data_row = 0;
-	while ( !feof( Csv.fd ) )
+	while ( !feof( csv_file.fd ) )
 	{
-		LeggiCsv( &Csv );
+		LeggiCsv( &csv_file );
 		if ( i_first_data_row == 0 )
 		{
-			ContaColonneCsv( &Csv );
+			ContaColonneCsv( &csv_file );
 		}
-		i_num_token = TokenizzaCsv( &Csv );
-		if ( i_num_token == Csv.num_colonne )
+		i_num_token = TokenizzaCsv( &csv_file );
+		if ( i_num_token == Dati.num_canali )
 		{
-			ConvertiDati( &Csv, &Dati );
+			ConvertiDati( &csv_file, &Dati );
 			NormalizzaDati( &Dati );
 
 			sf_writef_float( wav_file.fd, Dati.f_dato_norm, 1);
@@ -605,12 +668,12 @@ int main(int argc, char **argv)
 	
 	//	Chiusura files
 	if ( Parametri.flags.f_verbose ) {
-		printf( "   Ho finito.\n");
+		printf( "   Ho finito.\n\n");
 		fflush(stdout);
 	}
 		
-	if ( Csv.fd != NULL )
-		fclose( Csv.fd );
+	if ( csv_file.fd != NULL )
+		fclose( csv_file.fd );
 	
 	if ( wav_file.fd != NULL )
 		sf_close( wav_file.fd );
