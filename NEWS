@@ -1,3 +1,9 @@
+Version 1.3.0 (2015-11-24)
+  * Migrazione ad una versione che non utilizza la librearia libsndfile
+  * Corretti BUG allocazione memoria
+  * Correzione errori ortografici
+  * Nella normalizzazione dei valori utilizzo tipo dati SHORT INT
+  
 Version 1.2.0 (2015-11-14)
   * Allocazione dinamica delle colonne
   * Bugs lettura parametri

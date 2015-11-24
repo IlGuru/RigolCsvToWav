@@ -1,0 +1,4 @@
+Version 1.3.0 (2015-11-24)
+ * La versione senza libreria non funziona se ci sono più di 55000 righe e più di un canale.
+   I dati vengono mischiati tra i vari canali in fase di salvataggio.
+   Inoltre nel file wav generato compaiono molti più dati di quelli che vengono scritti, il problema potrebbe essere dovuto all'utilizzo di fwrite()
