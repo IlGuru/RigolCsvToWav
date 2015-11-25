@@ -1,6 +1,6 @@
 /*
 	Copyright 2015 Stefano Busnelli
-		Verion: 		1.3.0
+		Verion: 		1.4.0
 		Last modified:	2015-11-25
 
     This program is free software: you can redistribute it and/or modify
@@ -17,19 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define	USE_SNDFILE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 #include <float.h>
 
-#ifdef USE_SNDFILE
-#include <sndfile.h>
-#endif
-
-#define S_VERSION "1.3.0"
+#define S_VERSION "1.4.0"
 
 #define LEN_ROW 256
 #define LEN_COL 32
@@ -97,8 +91,6 @@ typedef struct {
 	s_status_flags	flags;
 } s_param;
 
-#ifndef USE_SNDFILE
-
 //	---------------------------------------------
 //	Formato RIFF file wav
 
@@ -132,20 +124,13 @@ typedef struct {
 	short*		pData;
 } s_wav_riff_hd;
 
-#endif
-
 //	---------------------------------------------
 
 //	wav file
 typedef struct {
 	char*			nome_file;
-#ifndef USE_SNDFILE
 	FILE*			fd;
 	s_wav_riff_hd*	wh;
-#else
-	SNDFILE*	fd;
-	SF_INFO 	sfinfo;	
-#endif
 } s_wav_file;
 
 void InitCsv( s_csv_file* p_csv )
@@ -729,8 +714,7 @@ int main(int argc, char **argv)
 		fflush(stdout);
 	}
 
-//	Strutture dati file wav
-#ifndef USE_SNDFILE
+	//	Strutture dati file wav
 
 	if ((wav_file.fd = fopen(wav_file.nome_file, "w")) == NULL )
 	{
@@ -762,16 +746,7 @@ int main(int argc, char **argv)
 	wav_file.wh->Data					= (short*) calloc( 1, wav_file.wh->data_sc.Subchunk2Size );
 	wav_file.wh->pData					= wav_file.wh->Data;
 	
-#else
-
-	wav_file.sfinfo.format		= SF_FORMAT_WAV | SF_FORMAT_PCM_16;
-	wav_file.sfinfo.channels	= Dati.num_canali;
-	wav_file.sfinfo.samplerate	= Parametri.sample_rate.val.i;
-
-#endif
-
-//	Apertura file wav in scrittura
-#ifndef USE_SNDFILE
+	//	Apertura file wav in scrittura
 
 	if ((wav_file.fd = fopen(wav_file.nome_file, "wb")) == NULL )
 	{
@@ -787,16 +762,6 @@ int main(int argc, char **argv)
 
 	fwrite( &wav_file.wh->data_sc, sizeof( s_data_sc ), 1, wav_file.fd );
 	fflush( wav_file.fd );
-
-#else
-	
-	if ((wav_file.fd = sf_open(wav_file.nome_file, SFM_WRITE, &wav_file.sfinfo)) == NULL )
-	{
-		printf( "\nErrore apertura file wav.\n\n" );
-		return 1;
-	}
-	
-#endif
 
 	//	Skip Header CSV
 	for ( i_ind = 0; i_ind < Parametri.skip_rows.val.i; i_ind++ )
@@ -822,22 +787,16 @@ int main(int argc, char **argv)
 			ConvertiDati( &csv_file, &Dati );
 			NormalizzaDati( &Dati );
 
-#ifndef USE_SNDFILE
 			memcpy( wav_file.wh->pData, Dati.f_dato_norm, Dati.num_canali*sizeof(short) );
 			wav_file.wh->pData += Dati.num_canali;
-#else
-			sf_writef_short( wav_file.fd, Dati.f_dato_norm, 1);
-#endif
 
 		}
 
 		i_num_data_row++;
 	}
 
-#ifndef USE_SNDFILE
 	fwrite( wav_file.wh->Data, wav_file.wh->data_sc.Subchunk2Size, 1, wav_file.fd );
 	fflush( wav_file.fd );
-#endif
 	
 	//	Chiusura files
 	if ( Parametri.flags.f_verbose ) {
@@ -848,13 +807,8 @@ int main(int argc, char **argv)
 	if ( csv_file.fd != NULL )
 		fclose( csv_file.fd );
 	
-#ifndef USE_SNDFILE
 	if ( wav_file.fd != NULL )
 		fclose( wav_file.fd );
-#else
- 	if ( wav_file.fd != NULL )
-		sf_close( wav_file.fd );		
-#endif
 		
 	//	Fine
 	return 0;

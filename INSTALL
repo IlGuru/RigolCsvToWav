@@ -12,34 +12,12 @@ PATH=%PATH%;C:\GCC-i686\bin
 2)	Compiling
 =============
 
-2.1) 		Utilizzando libsndfile:
-
-Nel main.c bisogna definire la macro USE_SNDFILE:
-
-#define	USE_SNDFILE
-
-2.1.a)	Compilazione per x86_64:
-
-C:\GCC-x86_64\bin\gcc.exe  -c  ".\main.c" -O2 -Wall -DNDEBUG  -o .\Release64\main.c.o -I. -IC:\GCC-x86_64\include
-C:\GCC-x86_64\bin\g++.exe  -o .\Release64\RigolCsvToWav .\Release64\main.c.o -L. -LC:\GCC-x86_64\lib64  -lsndfile.dll
-
-2.1.b)	Compilazione per i868:
-
-C:\GCC-i686\bin\gcc.exe  -c  ".\main.c" -O2 -Wall -DNDEBUG  -o .\Release32\main.c.o -I. -IC:\GCC-i686\include
-C:\GCC-i686\bin\g++.exe  -o .\Release32\RigolCsvToWav .\Release32\main.c.o -L. -LC:\GCC-i686\lib  -lsndfile.dll
-
-2.2) 		Senza libreria libsndfile:
-
-Nel main.c bisogna commentare la definizione della macro USE_SNDFILE:
-
-//#define	USE_SNDFILE
-
-2.2.a)	Compilazione per x86_64:
+2.a)	Compilazione per x86_64:
 
 C:\GCC-x86_64\bin\gcc.exe  -c  ".\main.c" -O2 -Wall -DNDEBUG  -o .\Release64\main.c.o -I. -IC:\GCC-x86_64\include
 C:\GCC-x86_64\bin\g++.exe  -o .\Release64\RigolCsvToWav .\Release64\main.c.o
 
-2.2.b)	Compilazione per i868:
+2.b)	Compilazione per i868:
 
 C:\GCC-i686\bin\gcc.exe  -c  ".\main.c" -O2 -Wall -DNDEBUG  -o .\Release32\main.c.o -I. -IC:\GCC-i686\include
 C:\GCC-i686\bin\g++.exe  -o .\Release32\RigolCsvToWav .\Release32\main.c.o

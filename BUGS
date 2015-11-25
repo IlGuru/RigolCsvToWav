@@ -1,2 +1,4 @@
+Version 1.4.0 (2015-11-25)
+
 Version 1.3.0 (2015-11-25)
  * 	Risolto bug corruzione file wav generato. Il problema era dovuto all'apertura del file in formasto testo invece che in binario.
