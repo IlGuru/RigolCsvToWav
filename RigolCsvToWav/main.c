@@ -1,7 +1,7 @@
 /*
 	Copyright 2015 Stefano Busnelli
 		Verion: 		1.3.0
-		Last modified:	2015-11-24
+		Last modified:	2015-11-25
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published 
@@ -773,7 +773,7 @@ int main(int argc, char **argv)
 //	Apertura file wav in scrittura
 #ifndef USE_SNDFILE
 
-	if ((wav_file.fd = fopen(wav_file.nome_file, "w")) == NULL )
+	if ((wav_file.fd = fopen(wav_file.nome_file, "wb")) == NULL )
 	{
 		printf( "\nErrore apertura file wav.\n\n" );
 		return 1;
